@@ -23,25 +23,16 @@ using namespace std;
 // TODO - move off of bitsets where it they are just used for convenience
 // TODO - add documentation
 
-/*
-    makeNewKey - does left rotate of current key
-*/
-void makeNewKey(uint64_t *curKey) {
-    bitset<64> keyBits(*curKey);
-    int leftMostBit = keyBits[63];
-    *curKey = (*curKey) << 1;
-    bitset<64> newKeyBits(*curKey);
-    newKeyBits[0] = newKeyBits[0] | leftMostBit;
-    *curKey = newKeyBits.to_ullong();
+void circularLeftShift(uint64_t *curKey) {
+    *curKey = ((*curKey) << 1) + ((*curKey) >> 63);
 }
-
 
 /*
     keyEncrypt - does key encryption function and 
         returns the next part of the key
 */
 uint64_t keyEncrypt(uint64_t *curKey, uint x) {
-    makeNewKey(curKey);
+    circularLeftShift(curKey);
     bitset<64> keyBits(*curKey);
     int outputByte = x % 8;
     int keyIndex = outputByte * 8;
