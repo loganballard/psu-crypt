@@ -13,12 +13,22 @@ unsigned short getFTableValue(unsigned short input) {
     return ftable[(row*16)+col];
 }
 
-void whitenInput(uint64_t block) {//, bitset<KEYSIZE> key) {
+void whitenInput(uint64_t block, bitset<KEYSIZE> key) {
     uint64_t w1 = block & WHITEN1;
     uint64_t w2 = block & WHITEN2;
     uint64_t w3 = block & WHITEN3;
     uint64_t w4 = block & WHITEN4;
+
     // TODO - more
+}
+
+uint64_t whitenOutput(uint64_t block, bitset<KEYSIZE> key) {
+    bitset<64> smallerKey(0);
+    for (int i = 0; i < 64; i++) {
+        smallerKey[i] = key[i];
+    }
+    uint64_t xorKey = smallerKey.to_ulong();
+    return (block ^ xorKey);
 }
 
 void circularRightShift(bitset<KEYSIZE> *curKey) {
