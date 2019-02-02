@@ -1,13 +1,25 @@
 //#include <cstdio>
-#include <string>
-#include <stdlib.h>
+//#include <string>
 #include <bitset>
 #include <iostream>
+#include <stdlib.h>
+#include "./constants.h"
 
 using namespace std;
 
-const int KEYSIZE = 80;
+unsigned short getFTableValue(unsigned short input) {
+    uint col = input & LOWFTABLEBITMASK;
+    uint row = (input & HIGHFTABLEBITMASK) >> 4;
+    return ftable[(row*16)+col];
+}
 
+void whitenInput(uint64_t block) {//, bitset<KEYSIZE> key) {
+    uint64_t w1 = block & WHITEN1;
+    uint64_t w2 = block & WHITEN2;
+    uint64_t w3 = block & WHITEN3;
+    uint64_t w4 = block & WHITEN4;
+    // TODO - more
+}
 
 void circularRightShift(bitset<KEYSIZE> *curKey) {
     int firstBit = (*curKey)[0];
@@ -25,8 +37,11 @@ void circularLeftShift(bitset<KEYSIZE> *curKey) {
     Key Functions for encryption and decryption
         For encryption, set encrypt = true
         For decryption, set encrypt = false
+
+    TODO - move off of bitset for output for good
+           use shifting
 */
-bitset<8> keyFunc(bitset<KEYSIZE> *curKey, uint x, bool encrypt) {
+uint8_t keyFunc(bitset<KEYSIZE> *curKey, uint x, bool encrypt) {
     int mod = KEYSIZE / 8;
     if (encrypt) circularLeftShift(curKey);
     int outputByte = x % mod;
@@ -36,7 +51,7 @@ bitset<8> keyFunc(bitset<KEYSIZE> *curKey, uint x, bool encrypt) {
         outputSet[i] = (*curKey)[keyIndex++];
     }
     if (!encrypt) circularRightShift(curKey);
-    return outputSet;
+    return uint8_t(outputSet.to_ulong());
 }
 
 int main(int argc, char *argv[]) {
@@ -45,8 +60,5 @@ int main(int argc, char *argv[]) {
         printf("Wrong number of arguments supplied!\n"); 
         exit(1);
     }*/
-    bitset<80> key(1);
-    // TODO remove testing values
-    
     exit(1);
 }
