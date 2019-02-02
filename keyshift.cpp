@@ -6,33 +6,27 @@
 
 using namespace std;
 
-/*
-    The Key Schedule K(x)
-    o Decryption:
-    Input: A number x and it is assumed that K() has access to the current, stored, 64 bit key K. 
-    The key is 64 bits and so 8 bytes long. Label the bytes 0 through 7 as for encryption. 
-    Now z is the x mod 8 byte of the key K. Right rotate K by 1 bit and store this value as the new key K’. 
-    Unlike encryption, the subkey is gotten before the rotation of the key. Output: z.
-    Instead you can generate ALL subkeys when the program starts, in this case 
-    decryption keys are just the keys used in reverse order.
 
-*/
-
-// TODO add decrypt function
 // TODO - cleanup
 // TODO - move off of bitsets where it they are just used for convenience
-// TODO - add documentation
+
+void circularRightShift(uint64_t *curKey) {
+    *curKey = ((*curKey) >> 1) + ((*curKey )<< 63);
+}
 
 void circularLeftShift(uint64_t *curKey) {
     *curKey = ((*curKey) << 1) + ((*curKey) >> 63);
 }
 
 /*
-    keyEncrypt - does key encryption function and 
-        returns the next part of the key
+    Key Functions for encryption and decryption
+        For encryption, set encrypt = true
+        For decryption, set encrypt = false
 */
-uint64_t keyEncrypt(uint64_t *curKey, uint x) {
-    circularLeftShift(curKey);
+uint64_t keyFunc(uint64_t *curKey, uint x, bool encrypt) {
+    if (encrypt) {
+        circularLeftShift(curKey);
+    }
     bitset<64> keyBits(*curKey);
     int outputByte = x % 8;
     int keyIndex = outputByte * 8;
@@ -40,9 +34,11 @@ uint64_t keyEncrypt(uint64_t *curKey, uint x) {
     for (int i=0; i <= 7; i++) {
         outputSet[i] = keyBits[keyIndex++];
     }
+    if (!encrypt) {
+        circularRightShift(curKey);
+    }
     return outputSet.to_ullong();
 }
-
 
 int main(int argc, char *argv[]) {
     // make sure that there is just one argument (the text file)
@@ -50,7 +46,8 @@ int main(int argc, char *argv[]) {
         printf("Wrong number of arguments supplied!\n"); 
         exit(1);
     }*/
-    uint64_t key = uint64_t(1) << 63; // TODO remove testing value
-    cout << keyEncrypt(&key, 0) << endl;
+    uint64_t key = uint64_t(1) << 2; // TODO remove testing value
+    cout << keyFunc(&key, 0, true) << endl;
+    cout << keyFunc(&key, 0, true) << endl;
     exit(1);
 }
