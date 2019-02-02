@@ -22,13 +22,17 @@ void whitenInput(uint64_t block, bitset<KEYSIZE> key) {
     // TODO - more
 }
 
+/*
+    whitenOutput
+        xor the key with the output block to make the
+        ciphertext
+*/
 uint64_t whitenOutput(uint64_t block, bitset<KEYSIZE> key) {
     bitset<64> smallerKey(0);
     for (int i = 0; i < 64; i++) {
         smallerKey[i] = key[i];
     }
-    uint64_t xorKey = smallerKey.to_ulong();
-    return (block ^ xorKey);
+    return (block ^ smallerKey.to_ullong());
 }
 
 void circularRightShift(bitset<KEYSIZE> *curKey) {
@@ -53,10 +57,10 @@ void circularLeftShift(bitset<KEYSIZE> *curKey) {
 */
 uint8_t keyFunc(bitset<KEYSIZE> *curKey, uint x, bool encrypt) {
     int mod = KEYSIZE / 8;
-    if (encrypt) circularLeftShift(curKey);
     int outputByte = x % mod;
     int keyIndex = outputByte * 8;
     bitset<8> outputSet(0);
+    if (encrypt) circularLeftShift(curKey);
     for (int i=0; i <= 7; i++) {
         outputSet[i] = (*curKey)[keyIndex++];
     }

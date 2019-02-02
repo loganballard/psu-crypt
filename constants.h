@@ -6,6 +6,7 @@ const uint64_t WHITEN1 = uint64_t(65535);
 const uint64_t WHITEN2 = uint64_t(65535) << 16;
 const uint64_t WHITEN3 = uint64_t(65535) << 32;
 const uint64_t WHITEN4 = uint64_t(65535) << 48;
+
 const unsigned short HIGHFTABLEBITMASK = 240;
 const unsigned short LOWFTABLEBITMASK = 15;
 
