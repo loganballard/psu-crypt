@@ -46,8 +46,6 @@ int main(int argc, char *argv[]) {
         printf("Wrong number of arguments supplied!\n"); 
         exit(1);
     }*/
-    uint64_t key = uint64_t(1) << 2; // TODO remove testing value
-    cout << keyFunc(&key, 0, true) << endl;
-    cout << keyFunc(&key, 0, true) << endl;
+    
     exit(1);
 }
