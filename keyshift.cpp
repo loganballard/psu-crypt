@@ -6,16 +6,19 @@
 
 using namespace std;
 
+const int KEYSIZE = 80;
 
-// TODO - cleanup
-// TODO - move off of bitsets where it they are just used for convenience
 
-void circularRightShift(uint64_t *curKey) {
-    *curKey = ((*curKey) >> 1) + ((*curKey )<< 63);
+void circularRightShift(bitset<KEYSIZE> *curKey) {
+    int firstBit = (*curKey)[0];
+    (*curKey) >>= 1;
+    (*curKey)[KEYSIZE-1] = firstBit;
 }
 
-void circularLeftShift(uint64_t *curKey) {
-    *curKey = ((*curKey) << 1) + ((*curKey) >> 63);
+void circularLeftShift(bitset<KEYSIZE> *curKey) {
+    int lastBit = (*curKey)[KEYSIZE-1];
+    (*curKey) <<= 1;
+    (*curKey)[0] = lastBit;
 }
 
 /*
@@ -23,21 +26,17 @@ void circularLeftShift(uint64_t *curKey) {
         For encryption, set encrypt = true
         For decryption, set encrypt = false
 */
-uint64_t keyFunc(uint64_t *curKey, uint x, bool encrypt) {
-    if (encrypt) {
-        circularLeftShift(curKey);
-    }
-    bitset<64> keyBits(*curKey);
-    int outputByte = x % 8;
+bitset<8> keyFunc(bitset<KEYSIZE> *curKey, uint x, bool encrypt) {
+    int mod = KEYSIZE / 8;
+    if (encrypt) circularLeftShift(curKey);
+    int outputByte = x % mod;
     int keyIndex = outputByte * 8;
     bitset<8> outputSet(0);
     for (int i=0; i <= 7; i++) {
-        outputSet[i] = keyBits[keyIndex++];
+        outputSet[i] = (*curKey)[keyIndex++];
     }
-    if (!encrypt) {
-        circularRightShift(curKey);
-    }
-    return outputSet.to_ullong();
+    if (!encrypt) circularRightShift(curKey);
+    return outputSet;
 }
 
 int main(int argc, char *argv[]) {
@@ -46,6 +45,8 @@ int main(int argc, char *argv[]) {
         printf("Wrong number of arguments supplied!\n"); 
         exit(1);
     }*/
+    bitset<80> key(1);
+    // TODO remove testing values
     
     exit(1);
 }
