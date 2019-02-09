@@ -1,6 +1,15 @@
 #include <stdlib.h>
 
-const int KEYSIZE = 80;
+typedef struct roundInfo {
+    uint16_t r0;
+    uint16_t r1;
+    uint16_t r2;
+    uint16_t r3;
+    uint roundNo;
+} roundInfo;
+
+const uint KEYSIZE = 80;
+const uint NUMROUNDS = 20; 
 
 const uint64_t WHITEN1 = uint64_t(65535);
 const uint64_t WHITEN2 = uint64_t(65535) << 16;

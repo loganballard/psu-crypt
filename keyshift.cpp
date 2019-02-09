@@ -3,9 +3,12 @@
 #include <bitset>
 #include <iostream>
 #include <stdlib.h>
+#include <limits>
 #include "./constants.h"
 
 using namespace std;
+
+roundInfo rInfo;
 
 unsigned short getFTableValue(unsigned short input) {
     uint col = input & LOWFTABLEBITMASK;
@@ -14,12 +17,30 @@ unsigned short getFTableValue(unsigned short input) {
 }
 
 void whitenInput(uint64_t block, bitset<KEYSIZE> key) {
-    uint64_t w1 = block & WHITEN1;
-    uint64_t w2 = block & WHITEN2;
-    uint64_t w3 = block & WHITEN3;
-    uint64_t w4 = block & WHITEN4;
-
-    // TODO - more
+    cout << key << endl << endl;
+    bitset<64> asdf = block;
+    cout << asdf << endl << endl;
+    uint64_t w0 = block & WHITEN1;
+    uint64_t w1 = (block & WHITEN2) >> 16;
+    uint64_t w2 = (block & WHITEN3) >> 32;
+    uint64_t w3 = (block & WHITEN4) >> 48;
+    bitset<16> k0;
+    bitset<16> k1;
+    bitset<16> k2;
+    bitset<16> k3;
+    int j = 16;
+    int k = 32;
+    int l = 48;
+    for (int i = 0; i < 16; i++, j++, k++, l++) {
+        k0[i] = key[i];
+        k1[i] = key[j];
+        k2[i] = key[k];
+        k3[i] = key[l];
+    }
+    rInfo.r0 = w0 ^ k0.to_ulong();
+    rInfo.r1 = w1 ^ k1.to_ulong();
+    rInfo.r2 = w2 ^ k2.to_ulong();
+    rInfo.r3 = w3 ^ k3.to_ulong();
 }
 
 /*
