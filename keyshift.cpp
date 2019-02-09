@@ -18,9 +18,9 @@ unsigned short getFTableValue(unsigned short input) {
 
 void whitenInput(uint64_t block, bitset<KEYSIZE> key) {
     bitset<16> k0, k1, k2, k3;
-    int j = 16;
-    int k = 32;
-    int l = 48;
+    uint8_t j = 16;
+    uint8_t k = 32;
+    uint8_t l = 48;
     for (int i = 0; i < 16; i++, j++, k++, l++) {
         k0[i] = key[i];
         k1[i] = key[j];
@@ -79,7 +79,17 @@ uint8_t keyFunc(bitset<KEYSIZE> *curKey, uint x, bool encrypt) {
     return uint8_t(outputSet.to_ulong());
 }
 
-
+uint16_t gPerm(uint16_t w, bitset<KEYSIZE> *curKey, bool encrypt) {
+    uint8_t g1, g2, g3, g4, g5, g6;
+    g1 = w >> 8;
+    g2 = w << 8;
+    g3 = getFTableValue(g2 ^ keyFunc(curKey, 4*rInfo.roundNo, encrypt)) ^ g1;
+    g4 = getFTableValue(g3 ^ keyFunc(curKey, 4*rInfo.roundNo + 1, encrypt)) ^ g2;
+    g5 = getFTableValue(g4 ^ keyFunc(curKey, 4*rInfo.roundNo + 2, encrypt)) ^ g3;
+    g6 = getFTableValue(g5 ^ keyFunc(curKey, 4*rInfo.roundNo + 3, encrypt)) ^ g4;
+    uint16_t ret = g5;
+    return (ret << 8) + g6;
+}
 
 void /* TODO change to fInfo */ fFunc(uint16_t r0, uint16_t r1) {
     // TODO - implement
