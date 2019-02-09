@@ -8,6 +8,11 @@ typedef struct roundInfo {
     uint roundNo;
 } roundInfo;
 
+typedef struct fInfo {
+    uint16_t f0;
+    uint16_t f1;
+} fInfo;
+
 const uint KEYSIZE = 80;
 const uint NUMROUNDS = 20; 
 

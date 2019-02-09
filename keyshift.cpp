@@ -17,17 +17,7 @@ unsigned short getFTableValue(unsigned short input) {
 }
 
 void whitenInput(uint64_t block, bitset<KEYSIZE> key) {
-    cout << key << endl << endl;
-    bitset<64> asdf = block;
-    cout << asdf << endl << endl;
-    uint64_t w0 = block & WHITEN1;
-    uint64_t w1 = (block & WHITEN2) >> 16;
-    uint64_t w2 = (block & WHITEN3) >> 32;
-    uint64_t w3 = (block & WHITEN4) >> 48;
-    bitset<16> k0;
-    bitset<16> k1;
-    bitset<16> k2;
-    bitset<16> k3;
+    bitset<16> k0, k1, k2, k3;
     int j = 16;
     int k = 32;
     int l = 48;
@@ -37,10 +27,10 @@ void whitenInput(uint64_t block, bitset<KEYSIZE> key) {
         k2[i] = key[k];
         k3[i] = key[l];
     }
-    rInfo.r0 = w0 ^ k0.to_ulong();
-    rInfo.r1 = w1 ^ k1.to_ulong();
-    rInfo.r2 = w2 ^ k2.to_ulong();
-    rInfo.r3 = w3 ^ k3.to_ulong();
+    rInfo.r0 = (block & WHITEN1) ^ k0.to_ulong();
+    rInfo.r1 = ((block & WHITEN2) >> 16) ^ k1.to_ulong();
+    rInfo.r2 = ((block & WHITEN3) >> 32) ^ k2.to_ulong();
+    rInfo.r3 = ((block & WHITEN4) >> 48) ^ k3.to_ulong();
 }
 
 /*
@@ -87,6 +77,21 @@ uint8_t keyFunc(bitset<KEYSIZE> *curKey, uint x, bool encrypt) {
     }
     if (!encrypt) circularRightShift(curKey);
     return uint8_t(outputSet.to_ulong());
+}
+
+
+
+void /* TODO change to fInfo */ fFunc(uint16_t r0, uint16_t r1) {
+    // TODO - implement
+}
+
+void encrypt(void) {
+    fInfo fFuncReturn;// TODO implement = fFunc(rInfo.r0, rInfo.r1);
+    rInfo.r0 = rInfo.r2 ^ fFuncReturn.f0;
+    rInfo.r1 = rInfo.r3 ^ fFuncReturn.f1;
+    rInfo.r2 = rInfo.r0;
+    rInfo.r3 = rInfo.r1;
+    rInfo.roundNo++;
 }
 
 int main(int argc, char *argv[]) {
