@@ -5,7 +5,7 @@ typedef struct roundInfo {
     uint16_t r1;
     uint16_t r2;
     uint16_t r3;
-    uint roundNo;
+    uint8_t roundNo;
 } roundInfo;
 
 typedef struct fInfo {

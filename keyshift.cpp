@@ -10,9 +10,9 @@ using namespace std;
 
 roundInfo rInfo;
 
-unsigned short getFTableValue(unsigned short input) {
-    uint col = input & LOWFTABLEBITMASK;
-    uint row = (input & HIGHFTABLEBITMASK) >> 4;
+uint8_t getFTableValue(uint8_t input) {
+    uint8_t col = input & LOWFTABLEBITMASK;
+    uint8_t row = (input & HIGHFTABLEBITMASK) >> 4;
     return ftable[(row*16)+col];
 }
 
@@ -47,13 +47,13 @@ uint64_t whitenOutput(uint64_t block, bitset<KEYSIZE> key) {
 }
 
 void circularRightShift(bitset<KEYSIZE> *curKey) {
-    int firstBit = (*curKey)[0];
+    uint8_t firstBit = (*curKey)[0];
     (*curKey) >>= 1;
     (*curKey)[KEYSIZE-1] = firstBit;
 }
 
 void circularLeftShift(bitset<KEYSIZE> *curKey) {
-    int lastBit = (*curKey)[KEYSIZE-1];
+    uint8_t lastBit = (*curKey)[KEYSIZE-1];
     (*curKey) <<= 1;
     (*curKey)[0] = lastBit;
 }
@@ -66,10 +66,10 @@ void circularLeftShift(bitset<KEYSIZE> *curKey) {
     TODO - move off of bitset for output for good
            use shifting
 */
-uint8_t keyFunc(bitset<KEYSIZE> *curKey, uint x, bool encrypt) {
-    int mod = KEYSIZE / 8;
-    int outputByte = x % mod;
-    int keyIndex = outputByte * 8;
+uint8_t keyFunc(bitset<KEYSIZE> *curKey, uint16_t x, bool encrypt) {
+    uint16_t mod = KEYSIZE / 8;
+    uint8_t outputByte = x % mod;
+    uint8_t keyIndex = outputByte * 8;
     bitset<8> outputSet(0);
     if (encrypt) circularLeftShift(curKey);
     for (int i=0; i <= 7; i++) {
@@ -82,13 +82,13 @@ uint8_t keyFunc(bitset<KEYSIZE> *curKey, uint x, bool encrypt) {
 uint16_t gPerm(uint16_t w, bitset<KEYSIZE> *curKey, bool encrypt) {
     uint8_t g1, g2, g3, g4, g5, g6;
     g1 = uint8_t(w >> 8);
-    g2 = uint8_t((w << 8) >> 8);
+    g2 = uint8_t((w << 8) >> 8); // TODO - could maybe just cast this directly
     g3 = getFTableValue(g2 ^ keyFunc(curKey, 4*rInfo.roundNo, encrypt)) ^ g1;
     g4 = getFTableValue(g3 ^ keyFunc(curKey, 4*rInfo.roundNo + 1, encrypt)) ^ g2;
     g5 = getFTableValue(g4 ^ keyFunc(curKey, 4*rInfo.roundNo + 2, encrypt)) ^ g3;
     g6 = getFTableValue(g5 ^ keyFunc(curKey, 4*rInfo.roundNo + 3, encrypt)) ^ g4;
-    uint16_t ret = g5;
-    return (ret << 8) + g6;
+    uint16_t ret = uint16_t(g5);
+    return ((ret << 8) + uint16_t(g6));
 }
 
 void /* TODO change to fInfo */ fFunc(uint16_t r0, uint16_t r1) {
@@ -110,5 +110,11 @@ int main(int argc, char *argv[]) {
         printf("Wrong number of arguments supplied!\n"); 
         exit(1);
     }*/
+    uint16_t x = 0;
+    for (int i = 4; i < 10; i++) {
+        x += (1 << i);
+    }
+    uint8_t y = uint8_t(x);
+    printf("%d", y);
     exit(1);
 }
