@@ -81,8 +81,8 @@ uint8_t keyFunc(bitset<KEYSIZE> *curKey, uint x, bool encrypt) {
 
 uint16_t gPerm(uint16_t w, bitset<KEYSIZE> *curKey, bool encrypt) {
     uint8_t g1, g2, g3, g4, g5, g6;
-    g1 = w >> 8;
-    g2 = w << 8;
+    g1 = uint8_t(w >> 8);
+    g2 = uint8_t((w << 8) >> 8);
     g3 = getFTableValue(g2 ^ keyFunc(curKey, 4*rInfo.roundNo, encrypt)) ^ g1;
     g4 = getFTableValue(g3 ^ keyFunc(curKey, 4*rInfo.roundNo + 1, encrypt)) ^ g2;
     g5 = getFTableValue(g4 ^ keyFunc(curKey, 4*rInfo.roundNo + 2, encrypt)) ^ g3;
