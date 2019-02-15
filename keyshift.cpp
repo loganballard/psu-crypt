@@ -87,16 +87,21 @@ uint16_t gPerm(uint16_t w, bitset<KEYSIZE> *curKey, bool encrypt) {
     g4 = getFTableValue(g3 ^ keyFunc(curKey, 4*rInfo.roundNo + 1, encrypt)) ^ g2;
     g5 = getFTableValue(g4 ^ keyFunc(curKey, 4*rInfo.roundNo + 2, encrypt)) ^ g3;
     g6 = getFTableValue(g5 ^ keyFunc(curKey, 4*rInfo.roundNo + 3, encrypt)) ^ g4;
-    uint16_t ret = uint16_t(g5);
-    return ((ret << 8) + uint16_t(g6));
+    uint16_t left = uint16_t(g5);
+    return ((left << 8) + uint16_t(g6));
 }
 
-void /* TODO change to fInfo */ fFunc(uint16_t r0, uint16_t r1) {
-    // TODO - implement
+fInfo fFunc(uint16_t r0, uint16_t r1, bitset<KEYSIZE> *curKey, bool encrypt) {
+   fInfo f;
+   uint16_t t0 = gPerm(r0, curKey, encrypt);
+   uint16_t t1 = gPerm(r1, curKey, encrypt);
+   f.f0 = (t0 + (2 * t1) + ((uint16_t(keyFunc(curKey, 4*rInfo.roundNo, encrypt)) << 8) + keyFunc(curKey, 4*rInfo.roundNo + 1, encrypt))) % (2 << 16);
+   f.f1 = ((2 * t0) + t1 + ((uint16_t(keyFunc(curKey, 4*rInfo.roundNo + 2, encrypt)) << 8) + keyFunc(curKey, 4*rInfo.roundNo + 3, encrypt))) % (2 << 16);
+   return f;
 }
 
-void encrypt(void) {
-    fInfo fFuncReturn;// TODO implement = fFunc(rInfo.r0, rInfo.r1);
+void encrypt(bitset<KEYSIZE> *curKey) {
+    fInfo fFuncReturn = fFunc(rInfo.r0, rInfo.r1, curKey, true);
     rInfo.r0 = rInfo.r2 ^ fFuncReturn.f0;
     rInfo.r1 = rInfo.r3 ^ fFuncReturn.f1;
     rInfo.r2 = rInfo.r0;
