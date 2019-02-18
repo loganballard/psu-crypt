@@ -1,4 +1,3 @@
-//#include <cstdio>
 #include <string>
 #include <bitset>
 #include <iostream>
@@ -113,25 +112,6 @@ roundInfo encrypt(uint16_t subkeyVals[ALTNUMROUNDS][12], roundInfo rInfo) {
     rInfo.roundNo = 0;
     for (int i = 0; i < 16; i++) {    
         cout << "round " << i << " go!" << endl;
-        fFuncReturn = fFunc(rInfo, subkeyVals);
-        tmp1 = rInfo.r0;
-        tmp2 = rInfo.r1;
-        rInfo.r0 = rInfo.r2 ^ fFuncReturn.f0;
-        rInfo.r1 = rInfo.r3 ^ fFuncReturn.f1;
-        rInfo.r2 = tmp1;
-        rInfo.r3 = tmp2;
-        rInfo.roundNo++;
-        cout << "data for the round: \n\tr0: " << rInfo.r0 << " r1: " << rInfo.r1 << " r2: " << rInfo.r2 << " r3: " << rInfo.r3 << " rNo: " << rInfo.roundNo << endl; 
-    }
-    return rInfo;
-}
-
-roundInfo decrypt(uint16_t subkeyVals[ALTNUMROUNDS][12], roundInfo rInfo) {
-    uint16_t tmp1, tmp2;
-    fInfo fFuncReturn;
-    rInfo.roundNo = 0;
-    for (int i = 0; i < 16; i++) {    
-        cout << "decrypt round " << i << " go!" << endl;
         fFuncReturn = fFunc(rInfo, subkeyVals);
         tmp1 = rInfo.r0;
         tmp2 = rInfo.r1;
