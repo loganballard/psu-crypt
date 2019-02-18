@@ -15,10 +15,10 @@ typedef struct fInfo {
     uint16_t f1;
 } fInfo;
 
-const uint16_t KEYSIZE = 80;
-const uint16_t NUMROUNDS = 20;
-const uint16_t ALTKEYSIZE = 64;
-const uint16_t ALTNUMROUNDS = 16;
+const uint16_t GRADKEYSIZE = 80;
+const uint16_t GRADNUMROUNDS = 20;
+const uint16_t KEYSIZE = 64;
+const uint16_t NUMROUNDS = 16;
 
 const uint64_t WHITEN1 = uint64_t(65535);
 const uint64_t WHITEN2 = uint64_t(65535) << 16;
