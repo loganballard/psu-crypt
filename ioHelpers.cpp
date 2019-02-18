@@ -6,47 +6,53 @@
 
 using namespace std;
 
-uint64_t makeBlock(string block) {
-    // TODO - READ ASCII VAL EACH CHAR
-    uint64_t blockNum = 0;
-    for (int i = 0; i < block.size(); i++) {
-        uint64_t c = block[i] << (i*8);
-        blockNum += c;
+int getCharCnt(string inputFile) {
+    int charCnt = 0;
+    ifstream plainTextFile;
+    plainTextFile.open(inputFile, ios::in);
+    while (!plainTextFile.eof()) {
+        plainTextFile.get();
+        charCnt++;
     }
-    return blockNum;
+    plainTextFile.close();
+    return charCnt;
 }
 
-
-bitset<ALTKEYSIZE> makeHexStrToKey(string keyStr) {
-    bitset<ALTKEYSIZE> k;
-    bitset<8> byte = 0;
-    string hexPre = "0x";
-    string charInd;
-    int ind = 0;
-    uint16_t intermediateNum;
-    for (int i = 2; i < keyStr.size()-1; i += 2) {
-        charInd = hexPre + keyStr[i] + keyStr[i+1];
-        intermediateNum = uint16_t(stoul(charInd, nullptr, 16));
-        byte = intermediateNum;
-        for (int j = 0; j < 8; j++) {
-            k[ind] = byte[j];
-            ind++;
-        }
+void padFile(string inputFile, int charCnt, int pad) {
+    string padding;
+    ofstream plainTextFile;
+    plainTextFile.open(inputFile, ios::app);
+    for (int i = 0; i < pad-1; i++) {
+        padding += '0';
     }
-    cout << k << endl;
-    return k;
+    padding += to_string(pad);
+    plainTextFile << padding;
+    plainTextFile.close();
+}
+
+void padInput(string inputFile) {
+    int charCnt = getCharCnt(inputFile);
+    int pad = 8 - (charCnt % 8);
+    padFile(inputFile, charCnt, pad);
 }
 
 int main(int argc, char *argv[]) {
     ifstream plainTextFile;
+    padInput("test/testPlain.txt");
     plainTextFile.open("test/testPlain.txt", ios::in);
     string block;
     char curChar;
+    uint64_t blockNum;
     while (!plainTextFile.eof()) {
         plainTextFile.get(curChar);
         block += curChar;
         if (block.size() % 8 == 0) {
-            cout << "block!" << endl;
+            for (int i = 0; i < block.size(); i++) {
+                blockNum += uint64_t(block[i]) << ((7-i) * 8);
+            }
+            // TODO - PROCESS BLOCK!
+            cout << "block: " << block << " blocknum: " << hex << blockNum << endl;
+            block = "";
         }
     }
     plainTextFile.close();

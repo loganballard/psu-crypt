@@ -163,30 +163,3 @@ int main(int argc, char *argv[]) {
     
     exit(1);
 }
-
-/*
-    Lets write this is psuedo code
-
-    Pre everything
-        - Check Arguments
-        - Read Key File
-            - Translate into a bitset
-        - Calculate the Entire subkey array
-        - Open Plaintext File
-        - Divide into 64 bit blocks
-            - Pad out with 00s
- 
-    Encryption
-        - Whiten
-            - XOR with key
-        - F Function
-            - Takes R0, R1, Round Number, 12 subkeys
-            - Calls the G Function
-                - takes a 16 bit number, some key values as inputs
-                - Gets some stuff off of the f table
-        - Undo final Swap
-        - output whitening (same as input whitening)
-    
-    Decryption
-        - Same as encryption, use subkeys in reverse
-*/
