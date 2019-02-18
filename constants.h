@@ -1,11 +1,13 @@
 #include <stdlib.h>
 
+#define TWOSIXTEEN uint64_t(pow(2, 16))
+
 typedef struct roundInfo {
     uint16_t r0;
     uint16_t r1;
     uint16_t r2;
     uint16_t r3;
-    uint8_t roundNo;
+    uint16_t roundNo;
 } roundInfo;
 
 typedef struct fInfo {
@@ -13,16 +15,18 @@ typedef struct fInfo {
     uint16_t f1;
 } fInfo;
 
-const uint8_t KEYSIZE = 80;
-const uint8_t NUMROUNDS = 20; 
+const uint16_t KEYSIZE = 80;
+const uint16_t NUMROUNDS = 20;
+const uint16_t ALTKEYSIZE = 64;
+const uint16_t ALTNUMROUNDS = 16;
 
 const uint64_t WHITEN1 = uint64_t(65535);
 const uint64_t WHITEN2 = uint64_t(65535) << 16;
 const uint64_t WHITEN3 = uint64_t(65535) << 32;
 const uint64_t WHITEN4 = uint64_t(65535) << 48;
 
-const uint8_t HIGHFTABLEBITMASK = 240;
-const uint8_t LOWFTABLEBITMASK = 15;
+const uint16_t HIGHFTABLEBITMASK = 240;
+const uint16_t LOWFTABLEBITMASK = 15;
 
 const uint8_t ftable[] = {
     0xa3,0xd7,0x09,0x83,0xf8,0x48,0xf6,0xf4,0xb3,0x21,0x15,0x78,0x99,0xb1,0xaf,0xf9,
