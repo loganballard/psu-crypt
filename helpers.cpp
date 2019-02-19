@@ -61,40 +61,6 @@ uint64_t whitenOutput(uint64_t block, bitset<KEYSIZE> key) {
     return ret;
 }
 
-void circularLeftShift(bitset<KEYSIZE> *curKey) {
-    uint8_t lastBit = (*curKey)[KEYSIZE-1];
-    (*curKey) <<= 1;
-    (*curKey)[0] = lastBit;
-}
-
-void gradCircularLeftShift(bitset<GRADKEYSIZE> *curKey) {
-    uint8_t lastBit = (*curKey)[GRADKEYSIZE-1];
-    (*curKey) <<= 1;
-    (*curKey)[0] = lastBit;
-}
-
-uint16_t keyFunc(bitset<KEYSIZE> *curKey, uint16_t x) {
-    uint16_t outputByte = x % 8;
-    uint16_t keyIndex = outputByte * 8;
-    bitset<8> outputSet = 0;
-    circularLeftShift(curKey);
-    for (int i=0; i <= 7; i++) {
-        outputSet[i] = (*curKey)[keyIndex++];
-    }
-    return uint16_t(outputSet.to_ulong());
-}
-
-uint16_t gradKeyFunc(bitset<GRADKEYSIZE> *curKey, uint16_t x) {
-    uint16_t outputByte = x % 8;
-    uint16_t keyIndex = outputByte * 8;
-    bitset<8> outputSet = 0;
-    gradCircularLeftShift(curKey);
-    for (int i=0; i <= 7; i++) {
-        outputSet[i] = (*curKey)[keyIndex++];
-    }
-    return uint16_t(outputSet.to_ulong());
-}
-
 uint16_t gPerm(uint16_t w, uint16_t roundNo, uint16_t subkeyVals[][12], uint16_t start) {
     uint8_t g1, g2, g3, g4, g5, g6;
     g1 = uint8_t(w >> 8);
@@ -145,4 +111,13 @@ roundInfo encrypt(uint16_t subkeyVals[][12], roundInfo rInfo, bool gradMode) {
         }
     }
     return rInfo;
+}
+
+int getCharCnt(ifstream inputFile) {
+    int charCnt = 0;
+    char scratch;
+    while (inputFile >> noskipws >> scratch) {
+        charCnt++;
+    }
+    return charCnt;
 }

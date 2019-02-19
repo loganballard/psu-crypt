@@ -1,3 +1,5 @@
 *.vscode
 *.dSYM
 *.exe
+test/*
+scratch.txt

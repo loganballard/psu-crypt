@@ -7,7 +7,7 @@
 #include <fstream>
 #include <math.h>
 
-#include "encFun.h"
+#include "helpers.h"
 
 const bool DEBUG = true;
 
@@ -20,66 +20,63 @@ uint64_t processBlock(uint64_t block, bitset<KEYSIZE> key, uint16_t subkeyVals[]
     return whitenOutput(intCipherText, key);
 }
 
-void makeGradSubkeys(bitset<GRADKEYSIZE> *key, uint16_t subkeys[GRADNUMROUNDS][12], uint16_t decSubkeys[GRADNUMROUNDS][12]) {
-    for (int i = 0; i < GRADNUMROUNDS; i++) {
-        for (int j = 0; j < 12; j++) {
-            subkeys[i][j] = gradKeyFunc(key, (4*i) + (j % 4));
-        }
-    }
-    int k = 0;
-    for (int i = GRADNUMROUNDS - 1; i >= 0; i--) {
-        for (int j = 0; j < 12; j++) {
-            decSubkeys[k][j] = subkeys[i][j];
-        }
-        k++;
-    }
+template <size_t keyS>
+void circularLeftShift(bitset<keyS> *curKey) {
+    uint8_t lastBit = (*curKey)[keyS-1];
+    (*curKey) <<= 1;
+    (*curKey)[0] = lastBit;
 }
 
-void makeSubkeys(bitset<KEYSIZE> *key, uint16_t subkeys[NUMROUNDS][12], uint16_t decSubkeys[NUMROUNDS][12]) {
-    for (int i = 0; i < NUMROUNDS; i++) {
+template <size_t keyS>
+uint16_t keyFunc(bitset<keyS> *curKey, uint16_t x) {
+    uint16_t outputByte = x % 8;
+    uint16_t keyIndex = outputByte * 8;
+    bitset<8> outputSet = 0;
+    circularLeftShift(curKey);
+    for (int i=0; i <= 7; i++) {
+        outputSet[i] = (*curKey)[keyIndex++];
+    }
+    return uint16_t(outputSet.to_ulong());
+}
+
+template <size_t keyS>
+void makeSubkeys(bitset<keyS> *key, uint16_t subkeys[][12], uint16_t decSubkeys[][12], int numRounds) {
+    int k = numRounds - 1;
+    for (int i = 0; i < numRounds; i++, k--) {
         for (int j = 0; j < 12; j++) {
             subkeys[i][j] = keyFunc(key, (4*i) + (j % 4));
-        }
-    }
-    int k = 0;
-    for (int i = NUMROUNDS - 1; i >= 0; i--) {
-        for (int j = 0; j < 12; j++) {
             decSubkeys[k][j] = subkeys[i][j];
         }
-        k++;
     }
 }
 
-int getCharCnt(string inputFile) {
-    int charCnt = 0;
-    char scratch;
-    ifstream plainTextFile;
-    plainTextFile.open(inputFile, ios::in);
-    while (plainTextFile >> noskipws >> scratch) {
-        charCnt++;
-    }
-    plainTextFile.close();
-    return charCnt;
-}
-
-void padFile(string inputFile, int charCnt, int pad) {
+string makePadding(int pad) {
     string padding;
-    ofstream plainTextFile;
-    plainTextFile.open(inputFile, ios::app);
     for (int i = 0; i < pad-1; i++) {
-        padding += '0';
+        padding += "0";
     }
     padding += to_string(pad);
-    plainTextFile << padding;
-    plainTextFile.close();
+    return padding;
 }
 
-void padInput(string inputFile) {
-    int charCnt = getCharCnt(inputFile);
-    int pad = 8 - (charCnt % 8);
-    padFile(inputFile, charCnt, pad);
+void padInput(string readFilePath, string paddedPlainPath) {
+    ifstream inputFile;
+    ofstream outputFile;
+    inputFile.open(readFilePath, ios::in);
+    outputFile.open(paddedPlainPath, ios::app);
+    int charCnt = 0;
+    char curChar;
+    while (inputFile >> noskipws >> curChar) {
+        charCnt++;
+        outputFile << curChar;
+    }
+    outputFile << makePadding(8 - (charCnt % 8));
+    inputFile.close();
+    outputFile.close();
 }
 
+
+// TODO ADD ERROR CHECKING + KEY NOT STARTING WITH 0X HANDLING
 string getKey(string keyFilePath) {
     string key;
     char curChar;
@@ -92,6 +89,7 @@ string getKey(string keyFilePath) {
     return key;
 }
 
+// TODO - THIS _CAN'T_ BE THE BEST WAY TO DO THIS... 
 bitset<GRADKEYSIZE> makeGradKeyFromStr(string keyStr) {
     bitset<GRADKEYSIZE> gradKey;
     string subKey;
@@ -99,13 +97,9 @@ bitset<GRADKEYSIZE> makeGradKeyFromStr(string keyStr) {
         subKey += keyStr[i];
     }
     bitset<64> preKey = stoull(subKey, nullptr, 16);
-    subKey.clear();
-    for (int i = 0; i < 64; i++) {
-        gradKey[i] = preKey[i];
-    }
-    cout << gradKey << endl;
+    gradKey = preKey.to_ullong();
     gradKey <<= 16;
-    cout << gradKey << endl;
+    subKey.clear();
     for (int i = 16; i < 20; i++) {
         subKey += keyStr[i];
     }
@@ -116,15 +110,22 @@ bitset<GRADKEYSIZE> makeGradKeyFromStr(string keyStr) {
     return gradKey;
 }
 
+string leftZeroPadHexBlock(string str, int size) {
+    while (str.size() != size) {
+        str = "0" + str;
+    }
+    return str;
+}
+
 void encProcessAllBlocks(string readFilePath, string writeFilePath, bitset<KEYSIZE> key, uint16_t subkeyVals[][12], bool gradMode) {
     char curChar;
     string block;
     uint64_t blockNum = 0;
-    ifstream inputFile;
     ofstream outputFile;
+    ifstream inputFile;
     
-    inputFile.open(readFilePath, ios::binary);
-    padInput(readFilePath);
+    padInput(readFilePath, TMPFILE);
+    inputFile.open(TMPFILE, ios::binary);
     outputFile.open(writeFilePath, ios::app);
     while (inputFile >> noskipws >> curChar) {
         block += curChar;
@@ -132,81 +133,72 @@ void encProcessAllBlocks(string readFilePath, string writeFilePath, bitset<KEYSI
             for (int i = 0; i < block.size(); i++) {
                 blockNum += uint64_t(block[i]) << ((7-i) * 8);
             }
-            uint64_t cipherBlock = processBlock(blockNum, key, subkeyVals, gradMode);
             stringstream w;
-            w << hex << cipherBlock;
-            string write = w.str();
-            if (write.size() == 15) {
-                write = "0" + write;
-            }
-            outputFile << write << "\n";
+            w << hex << processBlock(blockNum, key, subkeyVals, gradMode);
+            outputFile << leftZeroPadHexBlock(w.str(), 16);
             block.clear();
             blockNum = 0;
         }
     }
-    outputFile.close();
     inputFile.close();
+    outputFile.close();
+}
+
+string processDecText(string convToASCII) {
+    string ascii;
+    string ret;
+    string byte;
+    int trim;
+    for (int i = 0; i < convToASCII.size(); i += 2) {
+        byte = convToASCII.substr(i,2);
+        ascii += (char) stoull(byte, nullptr, 16);
+    }
+    trim = ascii[ascii.size()-1] - '0';
+    for (int i = 0; i < ascii.size() - trim; i++) {
+        ret += ascii[i];
+    }
+    return ret;
 }
 
 void decProcessAllBlocks(string readFilePath, string writeFilePath, bitset<KEYSIZE> key, uint16_t subkeyVals[][12], bool gradMode) {
     char curChar;
     string block;
-    uint64_t blockNum = 0;
     ifstream inputFile;
     fstream outputFile;
-    
-    inputFile.open(readFilePath, ios::binary);
-    outputFile.open("./tmp.txt", ios::app);
+    string convToASCII;
+
+    inputFile.open(readFilePath, ios::in);
+    outputFile.open(writeFilePath, ios::out | ofstream::trunc);
     while (inputFile >> noskipws >> curChar) {
         block += curChar;
-        if (curChar == '\n') {
-            blockNum = stoull(block, nullptr, 16);
-            uint64_t cipherBlock = processBlock(blockNum, key, subkeyVals, gradMode);  
+        if (block.size() == 16) {
+            uint64_t cipherBlock = processBlock(stoull(block, nullptr, 16), key, subkeyVals, gradMode);  
             stringstream w;
             w << hex << cipherBlock;
-            string write = w.str();
-            if (write.size() == 15) {
-                write = "0" + write;
-            }
-            outputFile << write;
+            convToASCII += leftZeroPadHexBlock(w.str(), 16);
             block.clear();
-            blockNum = 0;
         }
     }
-    outputFile.close();
-    string convToASCII;
-    outputFile.open("./tmp.txt", ios::in);
-    while (outputFile >> noskipws >> curChar) {
-        convToASCII += curChar;
-    }
-    outputFile.close();
-    outputFile.open(writeFilePath, ios::out | ofstream::trunc);
-    for(int i = 0; i < convToASCII.size(); i += 2) {
-        string byte = convToASCII.substr(i,2);
-        char chr = (char) stoull(byte, nullptr, 16);
-        outputFile << chr;
-    }
+    outputFile << processDecText(convToASCII);
     outputFile.close();
     inputFile.close();
 }
 
-void functionalityWrapper(string keyFilePath, string plainFilePath, string cipherFilePath, string decryptPath, bool encrypt) {
+void wrapper(string keyFilePath, string plainFilePath, string cipherFilePath, string decryptPath, bool encrypt) {
     string keyStr = getKey(keyFilePath);
     bool gradMode = keyStr.size() > 16 ? true : false;
     int numRounds = gradMode ? GRADNUMROUNDS : NUMROUNDS;
     uint16_t subkeyVals[numRounds][12];
     uint16_t decSubkeyVals[numRounds][12];
     bitset<KEYSIZE> key;
+    
     if (gradMode) {
         bitset<GRADKEYSIZE> gradKey = makeGradKeyFromStr(keyStr);
-        makeGradSubkeys(&gradKey, subkeyVals, decSubkeyVals);
-        gradKey >>= 16;
-        for (int i = 0; i < KEYSIZE; i++) {
-            key[i] = gradKey[i];
-        }
+        makeSubkeys(&gradKey, subkeyVals, decSubkeyVals, GRADNUMROUNDS);
+        key = (gradKey >>= 16).to_ullong();
     } else {
         key = stoull(keyStr, nullptr, 16);
-        makeSubkeys(&key, subkeyVals, decSubkeyVals);
+        makeSubkeys(&key, subkeyVals, decSubkeyVals, NUMROUNDS);
     }
     if (encrypt) {
         encProcessAllBlocks(plainFilePath, cipherFilePath, key, subkeyVals, gradMode);
@@ -217,10 +209,10 @@ void functionalityWrapper(string keyFilePath, string plainFilePath, string ciphe
 
 int main(int argc, char *argv[]) {
     string keyFilePath = "test/key.txt";
-    string plainFilePath = "test/rebTest.txt";
+    string plainFilePath = "test/testPlain.txt";
     string cipherFilePath = "test/ciphertext.txt";
     string decryptPath = "test/decrypt.txt";
-    functionalityWrapper(keyFilePath, plainFilePath, cipherFilePath, decryptPath, true);
-    functionalityWrapper(keyFilePath, plainFilePath, cipherFilePath, decryptPath, false);
+    wrapper(keyFilePath, plainFilePath, cipherFilePath, decryptPath, true);
+    wrapper(keyFilePath, plainFilePath, cipherFilePath, decryptPath, false);
     return 1;
 }
