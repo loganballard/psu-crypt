@@ -63,7 +63,7 @@ void padInput(string readFilePath, string paddedPlainPath) {
     ifstream inputFile;
     ofstream outputFile;
     inputFile.open(readFilePath, ios::in);
-    outputFile.open(paddedPlainPath, ios::app);
+    outputFile.open(paddedPlainPath, ios::out | ofstream::trunc);
     int charCnt = 0;
     char curChar;
     while (inputFile >> noskipws >> curChar) {
@@ -125,8 +125,8 @@ void encProcessAllBlocks(string readFilePath, string writeFilePath, bitset<KEYSI
     ifstream inputFile;
     
     padInput(readFilePath, TMPFILE);
-    inputFile.open(TMPFILE, ios::binary);
-    outputFile.open(writeFilePath, ios::app);
+    inputFile.open(TMPFILE, ios::in);
+    outputFile.open(writeFilePath, ios::out | ofstream::trunc);
     while (inputFile >> noskipws >> curChar) {
         block += curChar;
         if (block.size() % 8 == 0) {
@@ -142,11 +142,14 @@ void encProcessAllBlocks(string readFilePath, string writeFilePath, bitset<KEYSI
     }
     inputFile.close();
     outputFile.close();
+    if  (remove(TMPFILE) != 0) {
+        cout << "something went wrong removing files!" << endl;
+        exit(1);
+    }
 }
 
 string processDecText(string convToASCII) {
     string ascii;
-    string ret;
     string byte;
     int trim;
     for (int i = 0; i < convToASCII.size(); i += 2) {
@@ -154,10 +157,7 @@ string processDecText(string convToASCII) {
         ascii += (char) stoull(byte, nullptr, 16);
     }
     trim = ascii[ascii.size()-1] - '0';
-    for (int i = 0; i < ascii.size() - trim; i++) {
-        ret += ascii[i];
-    }
-    return ret;
+    return ascii.erase(ascii.size() - trim);
 }
 
 void decProcessAllBlocks(string readFilePath, string writeFilePath, bitset<KEYSIZE> key, uint16_t subkeyVals[][12], bool gradMode) {
