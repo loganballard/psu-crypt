@@ -2,14 +2,11 @@
 #include <bitset>
 #include <iostream>
 #include <stdlib.h>
-#include <limits>
 #include <sstream>
 #include <fstream>
-#include <math.h>
-
 #include "helpers.h"
 
-const bool DEBUG = true;
+const bool DEBUG = false;
 
 using namespace std;
 
@@ -75,8 +72,6 @@ void padInput(string readFilePath, string paddedPlainPath) {
     outputFile.close();
 }
 
-
-// TODO ADD ERROR CHECKING + KEY NOT STARTING WITH 0X HANDLING
 string getKey(string keyFilePath) {
     string key;
     char curChar;
@@ -89,7 +84,6 @@ string getKey(string keyFilePath) {
     return key;
 }
 
-// TODO - THIS _CAN'T_ BE THE BEST WAY TO DO THIS... 
 bitset<GRADKEYSIZE> makeGradKeyFromStr(string keyStr) {
     bitset<GRADKEYSIZE> gradKey;
     string subKey;

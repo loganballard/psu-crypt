@@ -2,8 +2,6 @@
 #include <bitset>
 #include <iostream>
 #include <stdlib.h>
-#include <limits>
-#include <sstream>
 #include <fstream>
 #include <math.h>
 #include "constants.h"
@@ -37,11 +35,6 @@ roundInfo whitenInput(uint64_t block, bitset<KEYSIZE> key) {
     return rInfo;
 }
 
-/*
-    whitenOutput
-        xor the key with the output block to make the
-        ciphertext
-*/
 uint64_t whitenOutput(uint64_t block, bitset<KEYSIZE> key) {
     bitset<16> k0, k1, k2, k3;
     uint8_t j = 16;

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 #define TWOSIXTEEN uint64_t(pow(2, 16))
-#define TMPFILE "./scratch.txt"
+#define TMPFILE "./02sbt9nd9UtctI2i.txt"
 
 typedef struct roundInfo {
     uint16_t r0;
