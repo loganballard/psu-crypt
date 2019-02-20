@@ -184,7 +184,7 @@ void decProcessAllBlocks(string readFilePath, string writeFilePath, bitset<KEYSI
     inputFile.close();
 }
 
-void wrapper(string keyFilePath, string plainFilePath, string cipherFilePath, string decryptPath, bool encrypt) {
+void wrapper(string keyFilePath, string readFilePath, string writeFilePath, bool encrypt) {
     string keyStr = getKey(keyFilePath);
     bool gradMode = keyStr.size() > 16 ? true : false;
     int numRounds = gradMode ? GRADNUMROUNDS : NUMROUNDS;
@@ -201,18 +201,33 @@ void wrapper(string keyFilePath, string plainFilePath, string cipherFilePath, st
         makeSubkeys(&key, subkeyVals, decSubkeyVals, NUMROUNDS);
     }
     if (encrypt) {
-        encProcessAllBlocks(plainFilePath, cipherFilePath, key, subkeyVals, gradMode);
+        cout << encrypt << endl;
+        encProcessAllBlocks(readFilePath, writeFilePath, key, subkeyVals, gradMode);
     } else {
-        decProcessAllBlocks(cipherFilePath, decryptPath, key, decSubkeyVals, gradMode);
+        decProcessAllBlocks(readFilePath, writeFilePath, key, decSubkeyVals, gradMode);
     }
 }
 
 int main(int argc, char *argv[]) {
-    string keyFilePath = "test/key.txt";
-    string plainFilePath = "test/testPlain.txt";
-    string cipherFilePath = "test/ciphertext.txt";
-    string decryptPath = "test/decrypt.txt";
-    wrapper(keyFilePath, plainFilePath, cipherFilePath, decryptPath, true);
-    wrapper(keyFilePath, plainFilePath, cipherFilePath, decryptPath, false);
-    return 1;
+    if (argc != 5) {
+        cout << "Wrong number of arguments supplied!" << endl;
+        exit(1);
+    }
+    bool encrypt;
+    string keyFilePath;
+    string readFilePath;
+    string writeFilePath;
+    try {
+        encrypt = stoi(argv[1]);
+        keyFilePath = argv[2];
+        readFilePath = argv[3];
+        writeFilePath = argv[4];
+    }
+    catch (...) {
+        cout << "Not sure what's going on but something went wrong!" << endl;
+        exit(1);
+    }
+    cout << encrypt << endl;
+    wrapper(keyFilePath, readFilePath, writeFilePath, encrypt);
+    exit(0);
 }
