@@ -201,7 +201,6 @@ void wrapper(string keyFilePath, string readFilePath, string writeFilePath, bool
         makeSubkeys(&key, subkeyVals, decSubkeyVals, NUMROUNDS);
     }
     if (encrypt) {
-        cout << encrypt << endl;
         encProcessAllBlocks(readFilePath, writeFilePath, key, subkeyVals, gradMode);
     } else {
         decProcessAllBlocks(readFilePath, writeFilePath, key, decSubkeyVals, gradMode);
@@ -227,7 +226,6 @@ int main(int argc, char *argv[]) {
         cout << "Not sure what's going on but something went wrong!" << endl;
         exit(1);
     }
-    cout << encrypt << endl;
     wrapper(keyFilePath, readFilePath, writeFilePath, encrypt);
     exit(0);
 }
