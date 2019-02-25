@@ -80,6 +80,11 @@ string getKey(string keyFilePath) {
     while (keyFile >> noskipws >> curChar) {
         key += curChar;
     }
+    if (key.size() != 17 && key.size() != 21) {
+        cout << "Key is not the right size! (16 for undergrad, 20 for grad)!" << endl;
+        cout << key.size() << endl;
+        exit(1);
+    }
     keyFile.close();
     return key;
 }
@@ -180,7 +185,7 @@ void decProcessAllBlocks(string readFilePath, string writeFilePath, bitset<KEYSI
 
 void wrapper(string keyFilePath, string readFilePath, string writeFilePath, bool encrypt) {
     string keyStr = getKey(keyFilePath);
-    bool gradMode = keyStr.size() > 16 ? true : false;
+    bool gradMode = keyStr.size() > 17 ? true : false;
     int numRounds = gradMode ? GRADNUMROUNDS : NUMROUNDS;
     uint16_t subkeyVals[numRounds][12];
     uint16_t decSubkeyVals[numRounds][12];
